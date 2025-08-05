@@ -1,11 +1,13 @@
 from flask import Flask, jsonify 
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 from extensions import db
 from models import User
 from routes import api_bp
 
 # Configure application
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 # App configs
 app.config.from_object('config.DevConfig')
@@ -17,7 +19,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Register the API blueprint with the /api prefix
+# Register the API blueprints inside the /api prefix
 app.register_blueprint(api_bp, url_prefix='/api')
 
 # Enable cross-origin requests to talk with Vue
