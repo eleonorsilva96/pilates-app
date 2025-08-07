@@ -1,19 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { storeToRefs } from 'pinia'
+import { useAlertsStore } from './stores/alerts'
+import Alert from './components/Alert.vue'
 
-const message = ref('')
+const storeAlerts = useAlertsStore()
 
-onMounted(async () => {
-  try {
-    const res = await axios.get('http://localhost:8888/api/hello')
-    message.value = res.data.message
-  } catch (err) {
-    console.error('Failed to fetch message:', err)
-  }
-})
+const { isVisible } = storeToRefs(storeAlerts)
 </script>
-
 <template>
   <!-- add header -->
   <div class="min-h-screen">
@@ -40,6 +33,7 @@ onMounted(async () => {
     <main>
       <RouterView />
     </main>
+    <Alert v-if="isVisible" />
   </div>
 </template>
 
