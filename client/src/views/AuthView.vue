@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import login from './LoginView.vue'
 import register from './RegisterView.vue'
+import { capitalize } from '@/helpers/textHelpers'
 
 const tabs = {
   login,
@@ -12,11 +13,6 @@ const tabs = {
 const route = useRoute()
 
 let currentTab = ref(route.name)
-
-function capitalize(word) {
-  if (!word) return ''
-  return word.charAt(0).toUpperCase() + word.slice(1)
-}
 
 watch(
   () => route.name,
