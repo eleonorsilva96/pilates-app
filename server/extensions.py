@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from nanoid import generate as nanoid_generate
+from flask_bcrypt import Bcrypt
 
 # define roles
 class Roles:
@@ -10,5 +11,7 @@ class Roles:
 def generate():
     return nanoid_generate()
 
+bcrypt = Bcrypt()
 db = SQLAlchemy()
+
 

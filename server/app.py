@@ -1,19 +1,18 @@
 from flask import Flask, jsonify 
 from flask_cors import CORS
-from flask_bcrypt import Bcrypt
-from extensions import db
+from extensions import db, bcrypt
 from models import User
 from routes import api_bp
 
 # Configure application
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
 
 # App configs
 app.config.from_object('config.DevConfig')
 
 # Init SQLAlchemy extension
 db.init_app(app)
+bcrypt.init_app(app)
 
 # Create database
 with app.app_context():
