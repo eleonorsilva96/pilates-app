@@ -5,57 +5,61 @@ import { useAlertsStore } from '@/stores/alerts'
 import { storeToRefs } from 'pinia'
 import { showAlert } from '@/helpers/generalHelpers'
 import { isValidEmail, isValidName } from '@/helpers/textHelpers'
+import { useRouter } from 'vue-router'
 
 const storeAlerts = useAlertsStore()
 const { isVisible, type, message } = storeToRefs(storeAlerts)
 const fullname = ref('')
 const email = ref('')
 const password = ref('')
-const code = ref(0)
+const msg = ref('')
 let isDisabled = ref(true)
+const router = useRouter()
 
 const styleStates = reactive({
   fullnameBorder: 'focus:border-pink-400 focus:border-2',
   emailBorder: 'focus:border-pink-400 focus:border-2',
   passwordBorder: 'focus:border-pink-400 focus:border-2',
-  disabledButton: 'opacity-50'
+  disabledButton: 'opacity-50',
 })
 
-// allow only letters in the name 
-watch(fullname, (newVal) => {
-  if (newVal !== '' && !isValidName(newVal)) {
-    styleStates.fullnameBorder = 'border-red-500 border-2'
-    type.value = 'error'
-    message.value = 'Only letters are allowed in the name'
-    showAlert(isVisible)
-    } else {
-      styleStates.fullnameBorder = 'focus:border-pink-400 focus:border-2'
-    }
-})
+// I NEED TO CREATE AN INLINE ALERT FOR THE FIELD VALIDATIONS
+
+// allow only letters in the name
+// watch(fullname, (newVal) => {
+//   if (newVal !== '' && !isValidName(newVal)) {
+//     styleStates.fullnameBorder = 'border-red-500 border-2'
+//     type.value.push('error') 
+//     message.value.push('Only letters are allowed in the name')
+//     showAlert(isVisible, type, message)
+//     } else {
+//       styleStates.fullnameBorder = 'focus:border-pink-400 focus:border-2'
+//     }
+// })
 
 // check for email format
-watch(email, (newVal) => {
-  if (newVal !== '' && !isValidEmail(newVal)) {
-    styleStates.emailBorder = 'border-red-500 border-2'
-    type.value = 'error'
-    message.value = 'Enter a valid email'
-    showAlert(isVisible)
-  } else {
-    styleStates.emailBorder = 'focus:border-pink-400 focus:border-2'
-  }
-})
+// watch(email, (newVal) => {
+//   if (newVal !== '' && !isValidEmail(newVal)) {
+//     styleStates.emailBorder = 'border-red-500 border-2'
+//     type.value.push('error') 
+//     message.value.push('Enter a valid email')
+//     showAlert(isVisible, type, message)
+//   } else {
+//     styleStates.emailBorder = 'focus:border-pink-400 focus:border-2'
+//   }
+// })
 
 // check if password is at least 5 characters
-watch(password, (newVal) => {
-  if (newVal !== '' && newVal.length < 5) {
-    styleStates.passwordBorder = 'border-red-500 border-2'
-    type.value = 'error'
-    message.value = 'Enter a password with at least 5 characters'
-    showAlert(isVisible)
-  } else {
-    styleStates.passwordBorder = 'focus:border-pink-400 focus:border-2'
-  }
-})
+// watch(password, (newVal) => {
+//   if (newVal !== '' && newVal.length < 5) {
+//     styleStates.passwordBorder = 'border-red-500 border-2'
+//     type.value.push('error') 
+//     message.value.push('Enter a password with at least 5 characters')
+//     showAlert(isVisible, type, message)
+//   } else {
+//     styleStates.passwordBorder = 'focus:border-pink-400 focus:border-2'
+//   }
+// })
 
 // disable button until the input value is not empty
 watch([fullname, email, password], ([newFullname, newEmail, newPassword]) => {
@@ -78,8 +82,11 @@ const buttonStyle = computed(() => {
 
 // The API post request happens when the form is submitted
 async function submitForm() {
+  // reset alerts store array to remove old values
+  type.value = []
+  message.value = []
+
   try {
-    
     const payload = {
       fullname: fullname.value,
       email: email.value,
@@ -91,23 +98,29 @@ async function submitForm() {
         'Content-Type': 'application/json',
       },
     })
-    code.value = res.data.code
 
-    if (code.value) {
-      showAlert(isVisible)
-
-      if (code.value === 404) {
-        // show error alert
-        type.value = 'error'
-        message.value = 'Please, insert your data'
-      } else {
-        // show success alert
-        type.value = 'success'
-        message.value = 'Register success!'
-      }
+    // user created with success
+    if (res.status === 201) {
+      msg.value = res.data.message
+      type.value.push('success')
+      message.value.push(msg.value)
+      router.push('/auth/login')
+      showAlert(isVisible, type, message)
     }
+
   } catch (err) {
-    console.error('Failed to fetch message:', err)
+    if (err.response) {
+      // errors from the backend validations
+      console.log(err.response.data.errors)
+
+      err.response.data.errors.forEach((msg) => {
+        type.value.push('error')
+        message.value.push(msg)
+        showAlert(isVisible, type, message)
+      })
+    } else {
+      console.error('Failed to fetch message:', err)
+    }
   }
 }
 </script>
@@ -117,23 +130,40 @@ async function submitForm() {
   <form action="/register" method="post" @submit.prevent="submitForm">
     <div class="flex flex-col w-full gap-4">
       <div class="flex flex-col gap-2">
-        <label for="fullname" class="text-sm font-medium text-neutral text-opacity-75">Full Name</label>
-        <input v-model="fullname" autocomplete="off" placeholder="Enter your fullname" type="text"
-          :class="inputStyle(styleStates.fullnameBorder)" />
+        <label for="fullname" class="text-sm font-medium text-neutral text-opacity-75"
+          >Full Name</label
+        >
+        <input
+          v-model="fullname"
+          autocomplete="off"
+          placeholder="Enter your fullname"
+          type="text"
+          :class="inputStyle(styleStates.fullnameBorder)"
+        />
       </div>
       <div class="flex flex-col gap-2">
         <label for="email" class="text-sm font-medium text-neutral text-opacity-75">Email</label>
-        <input v-model="email" autocomplete="off" placeholder="Enter your email" type="text"
-          :class="inputStyle(styleStates.emailBorder)" />
+        <input
+          v-model="email"
+          autocomplete="off"
+          placeholder="Enter your email"
+          type="text"
+          :class="inputStyle(styleStates.emailBorder)"
+        />
       </div>
       <div class="flex flex-col gap-2">
-        <label for="password" class="text-sm font-medium text-neutral text-opacity-75">Password</label>
-        <input v-model="password" autocomplete="off" placeholder="Enter your password" type="password"
-          :class="inputStyle(styleStates.passwordBorder)" />
+        <label for="password" class="text-sm font-medium text-neutral text-opacity-75"
+          >Password</label
+        >
+        <input
+          v-model="password"
+          autocomplete="off"
+          placeholder="Enter your password"
+          type="password"
+          :class="inputStyle(styleStates.passwordBorder)"
+        />
       </div>
-      <button :disabled="isDisabled" type="submit" :class="buttonStyle">
-        Create Account
-      </button>
+      <button :disabled="isDisabled" type="submit" :class="buttonStyle">Create Account</button>
     </div>
   </form>
 </template>

@@ -5,7 +5,7 @@ import Alert from './components/Alert.vue'
 
 const storeAlerts = useAlertsStore()
 
-const { isVisible } = storeToRefs(storeAlerts)
+const { isVisible, type, message } = storeToRefs(storeAlerts)
 </script>
 <template>
   <!-- add header -->
@@ -33,7 +33,7 @@ const { isVisible } = storeToRefs(storeAlerts)
     <main>
       <RouterView />
     </main>
-    <Alert v-if="isVisible" />
+    <Alert v-if="isVisible" :types="type" :messages="message" />
   </div>
 </template>
 

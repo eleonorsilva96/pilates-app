@@ -1,8 +1,9 @@
+export function showAlert(visible, type, message) {
+  visible.value = true
 
-export function showAlert(alert) {
-    alert.value = true
-
-      setTimeout(() => {
-        alert.value = false
-      }, 5000)
+  setTimeout(() => {
+    visible.value = false
+    type.value = []
+    message.value = []
+  }, 7000)
 }
