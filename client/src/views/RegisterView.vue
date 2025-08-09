@@ -12,7 +12,6 @@ const { isVisible, type, message } = storeToRefs(storeAlerts)
 const fullname = ref('')
 const email = ref('')
 const password = ref('')
-const msg = ref('')
 let isDisabled = ref(true)
 const router = useRouter()
 
@@ -101,9 +100,8 @@ async function submitForm() {
 
     // user created with success
     if (res.status === 201) {
-      msg.value = res.data.message
       type.value.push('success')
-      message.value.push(msg.value)
+      message.value.push(res.data.message)
       router.push('/auth/login')
       showAlert(isVisible, type, message)
     }
