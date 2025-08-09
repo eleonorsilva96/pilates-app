@@ -28,3 +28,11 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+*.sqlite
+*.sqlite3
