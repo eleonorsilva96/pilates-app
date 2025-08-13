@@ -1,7 +1,6 @@
 from flask import Flask, jsonify 
 from flask_cors import CORS
-from extensions import db, bcrypt
-from models import User
+from extensions import db, bcrypt, jwt, EmailAlreadyExistsError
 from routes import api_bp
 
 # Configure application
@@ -10,9 +9,10 @@ app = Flask(__name__)
 # App configs
 app.config.from_object('config.DevConfig')
 
-# Init SQLAlchemy extension
+# Init extensions
 db.init_app(app)
 bcrypt.init_app(app)
+jwt.init_app(app)
 
 # Create database
 with app.app_context():
