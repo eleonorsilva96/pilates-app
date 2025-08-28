@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import select
 from pydantic import BaseModel, field_validator, constr, ValidationError
-from models import Users
+from models import User
 from extensions import db, bcrypt, AuthError
 from flask_jwt_extended import JWTManager, create_access_token
 import re # regular expressions module
@@ -9,7 +9,7 @@ import re # regular expressions module
 # Creates a blueprint that can be imported
 login_bp = Blueprint('login_bp', __name__)
 
-class UsersSchema(BaseModel):
+class UserSchema(BaseModel):
     email: constr(strip_whitespace=True)
     password: constr(strip_whitespace=True)
 
@@ -17,9 +17,9 @@ class UsersSchema(BaseModel):
 @login_bp.route('/login', methods=["POST"])
 def login():
     try:
-        data = UsersSchema(**request.json)
+        data = UserSchema(**request.json)
         
-        user = db.session.scalars(select(Users).where(Users.email == data.email)).first()
+        user = db.session.scalars(select(User).where(User.email == data.email)).first()
 
         if not user or not bcrypt.check_password_hash(user.password_hash, data.password):
             raise AuthError("Invalid e-mail or password")

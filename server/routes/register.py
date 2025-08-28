@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from pydantic import BaseModel, field_validator, constr, ValidationError
-from models import Users
+from models import User
 from extensions import db, bcrypt, EmailAlreadyExistsError
 from sqlalchemy import select
 import re # regular expressions module
@@ -11,7 +11,7 @@ register_bp = Blueprint('register_bp', __name__)
 NAME_PATTERN = r"^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$"
 EMAIL_PATTERN = r"^[\w\.-]+@[\w\.-]+\.\w+$"
 
-class UsersSchema(BaseModel):
+class UserSchema(BaseModel):
     fullname: constr(strip_whitespace=True)
     email: constr(strip_whitespace=True)
     password: constr(min_length=5)
@@ -32,10 +32,10 @@ class UsersSchema(BaseModel):
 @register_bp.route('/register', methods=["POST"])
 def register():
     try:
-        data = UsersSchema(**request.json) # raise ValidationError if not passed
+        data = UserSchema(**request.json) # raise ValidationError if not passed
 
         # check for existed user
-        user = db.session.scalars(select(Users).where(Users.email == data.email)).first()
+        user = db.session.scalars(select(User).where(User.email == data.email)).first()
         
         if user:
             raise EmailAlreadyExistsError("This email already exists")
@@ -43,7 +43,7 @@ def register():
         # hash the password
         hashed_pw = bcrypt.generate_password_hash(data.password).decode("utf-8")
 
-        new_user = Users(
+        new_user = User(
             name=data.fullname,
             email=data.email,
             password_hash=hashed_pw

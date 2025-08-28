@@ -1,7 +1,7 @@
 
 from app import app
 from extensions import db
-from models.user import User
+from models.users import User
 
 with app.app_context():
     user = User(name="Maria", email="maria@gmail.com", password_hash="secretnew123")
