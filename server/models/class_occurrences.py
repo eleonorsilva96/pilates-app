@@ -8,5 +8,5 @@ class ClassOccurrence(db.Model):
     spots = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Integer, nullable=False)
     
-    schedules = db.relationship("ClassSchedule", back_populates="class_occurrences")
-    user_schedules = db.relationship("UserSchedule", back_populates="class_occurrences")
+    schedule = db.relationship("ClassSchedule", back_populates="class_occurrences")
+    user_schedules = db.relationship("UserSchedule", back_populates="class_occurrence")

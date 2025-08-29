@@ -10,5 +10,5 @@ class Teacher(db.Model):
         nullable=False)
     status = db.Column(db.Integer, nullable=False, default=TeacherStatus.AVAILABLE.value)
 
-    users = db.relationship("Users", back_populates="teachers")
-    schedules = db.relationship("ClassSchedule", back_populates="teachers", cascade="all, delete-orphan")
+    user = db.relationship("User", back_populates="teacher")
+    schedules = db.relationship("ClassSchedule", back_populates="teacher", cascade="all, delete-orphan")

@@ -9,5 +9,5 @@ class UserSchedule(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     canceled_at = db.Column(db.DateTime, nullable=True)
     
-    users = db.relationship("Users", back_populates="user_schedules")
-    class_occurrences = db.relationship("ClassOccurrence", back_populates="user_schedules")
+    user = db.relationship("User", back_populates="user_schedules")
+    class_occurrence = db.relationship("ClassOccurrence", back_populates="user_schedules")

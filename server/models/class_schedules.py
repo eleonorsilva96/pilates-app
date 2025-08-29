@@ -11,8 +11,8 @@ class ClassSchedule(db.Model):
     status = db.Column(db.Integer, nullable=False, default=ClassesStatus.AVAILABLE.value)
     
     class_ = db.relationship("Classes", back_populates="schedules")
-    teachers = db.relationship("Teachers", back_populates="schedules")
-    class_occurrences = db.relationship("ClassOccurrence", back_populates="schedules")
+    teacher = db.relationship("Teacher", back_populates="schedules")
+    class_occurrences = db.relationship("ClassOccurrence", back_populates="schedule")
 
     # the teacher can only have one class type per day and ensure it is always enforced
     # classes (same or different) don't start at the same time on the same day

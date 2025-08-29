@@ -9,6 +9,6 @@ class User(db.Model):
     img_path = db.Column(db.Text, nullable=True)
     role = db.Column(db.String(20), nullable=False, default=Roles.USER)
 
-    students = db.relationship("Students", back_populates="users", uselist=False)
-    teachers = db.relationship("Teachers", back_populates="users", uselist=False)
-    user_schedules = db.relationship("UserSchedule", back_populates="users")
+    student = db.relationship("Student", back_populates="user", uselist=False)
+    teacher = db.relationship("Teacher", back_populates="user", uselist=False)
+    user_schedules = db.relationship("UserSchedule", back_populates="user")

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from pydantic import BaseModel, field_validator, constr, ValidationError
-from models import User
-from extensions import db, bcrypt, EmailAlreadyExistsError
+from models import User, Student
+from extensions import db, bcrypt, EmailAlreadyExistsError, Roles
 from sqlalchemy import select
 import re # regular expressions module
 
@@ -34,8 +34,11 @@ def register():
     try:
         data = UserSchema(**request.json) # raise ValidationError if not passed
 
-        # check for existed user
-        user = db.session.scalars(select(User).where(User.email == data.email)).first()
+        # check for existed user student
+        user = db.session.scalars(select(User).where(
+            User.email == data.email,
+            User.role == Roles.USER
+            )).first()
         
         if user:
             raise EmailAlreadyExistsError("This email already exists")
@@ -48,6 +51,9 @@ def register():
             email=data.email,
             password_hash=hashed_pw
         )
+
+        # sets the relationship with users and automatically links the user in the students table
+        Student(user=new_user)
 
         db.session.add(new_user)
         db.session.commit()
