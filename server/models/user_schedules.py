@@ -1,7 +1,9 @@
 from extensions import db, ScheduleStatus
+from datetime import datetime
 
 # use composite primary key to ensure the user cannot book the same class occurrence twice 
 class UserSchedule(db.Model):
+    __tablename__ = "user_schedules"
     user_id = db.Column(db.String(21), db.ForeignKey("users.id"), primary_key=True)
     class_occurrence_id = db.Column(db.Integer, db.ForeignKey("class_occurrences.id"), primary_key=True)
     status = db.Column(db.Integer, nullable=False, default=ScheduleStatus.SCHEDULE.value)

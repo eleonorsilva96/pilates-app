@@ -2,6 +2,7 @@ from extensions import db, TeacherStatus
 from config import DevConfig
 
 class Teacher(db.Model):
+    __tablename__ = "teachers"
     user_id = db.Column(db.String(21), db.ForeignKey("users.id"), primary_key=True)
     description = db.Column(db.String(200), nullable=True)
     number_of_classes_allowed = db.Column(

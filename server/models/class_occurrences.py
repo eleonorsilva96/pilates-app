@@ -2,6 +2,7 @@ from extensions import db, ClassesStatus
 
 # ClassSchedule constraint ensures each occurrence has a unique start time
 class ClassOccurrence(db.Model):
+    __tablename__ = "class_occurrences"
     id = db.Column(db.Integer, primary_key=True)
     class_schedule_id = db.Column(db.Integer, db.ForeignKey("class_schedules.id"), nullable=False)
     date = db.Column(db.Date, nullable=False) 

@@ -1,6 +1,7 @@
 from extensions import db, ClassesStatus
 
 class ClassSchedule(db.Model):
+    __tablename__ = "class_schedules"
     id = db.Column(db.Integer, primary_key=True)
     class_id = db.Column(db.Integer, db.ForeignKey("classes.id"), nullable=False)
     teacher_id = db.Column(db.String(21), db.ForeignKey("teachers.user_id"), nullable=False)

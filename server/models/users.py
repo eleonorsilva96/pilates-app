@@ -1,6 +1,7 @@
 from extensions import db, generate, Roles
 
 class User(db.Model):
+    __tablename__ = "users"
     id = db.Column(db.String(21), primary_key=True, default=generate)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
