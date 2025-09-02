@@ -28,7 +28,7 @@ const styleStates = reactive({
 // watch(fullname, (newVal) => {
 //   if (newVal !== '' && !isValidName(newVal)) {
 //     styleStates.fullnameBorder = 'border-red-500 border-2'
-//     type.value.push('error') 
+//     type.value.push('error')
 //     message.value.push('Only letters are allowed in the name')
 //     showAlert(isVisible, type, message)
 //     } else {
@@ -40,7 +40,7 @@ const styleStates = reactive({
 // watch(email, (newVal) => {
 //   if (newVal !== '' && !isValidEmail(newVal)) {
 //     styleStates.emailBorder = 'border-red-500 border-2'
-//     type.value.push('error') 
+//     type.value.push('error')
 //     message.value.push('Enter a valid email')
 //     showAlert(isVisible, type, message)
 //   } else {
@@ -52,7 +52,7 @@ const styleStates = reactive({
 // watch(password, (newVal) => {
 //   if (newVal !== '' && newVal.length < 5) {
 //     styleStates.passwordBorder = 'border-red-500 border-2'
-//     type.value.push('error') 
+//     type.value.push('error')
 //     message.value.push('Enter a password with at least 5 characters')
 //     showAlert(isVisible, type, message)
 //   } else {
@@ -92,7 +92,7 @@ async function submitForm() {
       password: password.value,
     }
 
-    const res = await axios.post('http://localhost:8888/api/register', payload, {
+    const res = await axios.post('http://localhost:8888/api/auth/register', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -105,7 +105,6 @@ async function submitForm() {
       router.push('/auth/login')
       showAlert(isVisible, type, message)
     }
-
   } catch (err) {
     if (err.response) {
       // errors from the backend validations

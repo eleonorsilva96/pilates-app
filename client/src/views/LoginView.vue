@@ -1,17 +1,16 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios';
-import { useAlertsStore } from '@/stores/alerts';
-import { storeToRefs } from 'pinia';
-import { showSuccessAlert, showErrorAlert } from '@/helpers/generalHelpers';
-import router from '@/router';
-import { useAuthStore } from '@/stores/auth';
+import axios from 'axios'
+import { useAlertsStore } from '@/stores/alerts'
+import { storeToRefs } from 'pinia'
+import { showSuccessAlert, showErrorAlert } from '@/helpers/generalHelpers'
+import router from '@/router'
+// import { useAuthStore } from '@/stores/auth'
 
 const storeAlerts = useAlertsStore()
-const storeAuth = useAuthStore()
+// const storeAuth = useAuthStore()
 
 const { isVisible, type, message } = storeToRefs(storeAlerts)
-const { token } = storeToRefs(storeAuth)
 
 const email = ref('')
 const password = ref('')
@@ -25,25 +24,19 @@ async function submitForm() {
   try {
     const payload = {
       email: email.value,
-      password: password.value
+      password: password.value,
     }
-  
-    const res = await axios.post('http://localhost:8888/api/login', payload, {
+
+    const res = await axios.post('http://localhost:8888/api/auth/login', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
+      withCredentials: true
     })
 
     if (res.status === 200) {
       showSuccessAlert(res.data.message, isVisible, type, message)
-      // save token in a store variable
-      if (res.data.access_token) {
-        token.value = res.data.access_token
-        // push to index / dashboard
-        router.push('/dashboard')
-      } else {
-        router.push('/login')
-      }
+      router.push('/dashboard')
     }
   } catch (err) {
     // insert errors messages to the front
@@ -53,9 +46,7 @@ async function submitForm() {
       console.error('Failed to fetch message:', err)
     }
   }
-   
 }
-
 </script>
 
 <template>

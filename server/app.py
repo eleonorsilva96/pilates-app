@@ -9,6 +9,13 @@ app = Flask(__name__)
 # App configs
 app.config.from_object('config.DevConfig')
 
+# JWT from cookie
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_COOKIE_SECURE"] = False
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 60    # 900 15 minutes
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 604800 # 7 days
+
 # Init extensions
 db.init_app(app)
 bcrypt.init_app(app)
@@ -21,8 +28,12 @@ with app.app_context():
 # Register the API blueprints inside the /api prefix
 app.register_blueprint(api_bp, url_prefix='/api')
 
-# Enable cross-origin requests to talk with Vue
-CORS(app, origins=["http://localhost:5173"])
+# Enable cross-origin requests and cookies from Vue
+CORS(
+    app, 
+    origins=["http://localhost:5173"],
+    supports_credentials=True
+)
 
 if __name__ == "__main__":
     app.run(port=8888)

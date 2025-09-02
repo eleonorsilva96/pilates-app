@@ -1,3 +1,4 @@
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from nanoid import generate as nanoid_generate
 from flask_bcrypt import Bcrypt
@@ -56,5 +57,18 @@ class AuthError(Exception):
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 jwt = JWTManager()
+
+# global error handlers for JWT exceptions
+@jwt.unauthorized_loader
+def unauthorized_callback(_):
+    return jsonify({"error": "Missing or invalid token"}), 401
+
+@jwt.expired_token_loader
+def expired_token_callback(_, __):
+    return jsonify({"error": "Token has expired"}), 401
+
+@jwt.invalid_token_loader
+def invalid_token_callback(_):
+    return jsonify({"error": "Invalid token"}), 422
 
 
