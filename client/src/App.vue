@@ -1,33 +1,29 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { useAlertsStore } from './stores/alerts'
+import { useAuthStore } from './stores/auth'
 import Alert from './components/Alert.vue'
+import Header from './components/Header.vue'
+import { onMounted } from 'vue'
+import { watch } from 'vue'
 
 const storeAlerts = useAlertsStore()
 
 const { isVisible, type, message } = storeToRefs(storeAlerts)
+
+onMounted(async () => {
+  const storeAuth = useAuthStore()
+  // check if user is authenticated to ensure the auth store global variable is synced with backend
+  // if happens full page loads or close pages the token still persists because is stored in a http-only cookie
+  storeAuth.initAuth()
+})
 </script>
 <template>
   <!-- add header -->
   <div class="min-h-screen">
     <div class="border-b sticky">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <nav class="flex justify-between h-16">
-          <RouterLink to="/" class="self-center font-bold text-xl">PilatesFlow</RouterLink>
-          <div class="flex space-x-4 items-center">
-            <RouterLink
-              to="/auth/login"
-              class="font-medium text-neutral dark:text-neutral hover:underline"
-              >Login
-            </RouterLink>
-            <RouterLink
-              to="/auth/register"
-              class="text-white bg-pink-700 hover:bg-pink-800 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-pink-600 dark:hover:bg-pink-700 focus:outline-none dark:focus:ring-pink-800"
-            >
-              Get Started</RouterLink
-            >
-          </div>
-        </nav>
+        <Header />
       </div>
     </div>
     <main>

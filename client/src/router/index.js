@@ -5,7 +5,8 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import ClassesView from '../views/ClassesView.vue'
-import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
+import { storeToRefs } from 'pinia'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,34 +42,18 @@ const router = createRouter({
 
 // before the route changes to protected routes check if user is authenticated
 router.beforeEach(async (to, from, next) => {
+  const storeAuth = useAuthStore() // initialize auth store after pinia is created
+  const { isAuthenticated } = storeToRefs(storeAuth)
 
-  if (!to.meta.requiresAuth) return next()
-
-  const validateToken = async () => {
-    return axios.get('http://localhost:8888/api/auth/check-auth', { withCredentials: true }) // send cookies along with cross-origin requests
-  }
-
-  try {
-    // backend validates token stored in HTTP-only cookie (sent automatically by the browser)
-    const res = await validateToken()
-    console.log(res.data.message)
-    next()
-  } catch (err) {
-    // if access token expires read refresh token to create another one in route /refresh
-    if (err.response?.status === 401) {
-        try {
-          const res = await axios.get('http://localhost:8888/api/auth/refresh', { withCredentials: true })
-          console.log(res.data.message)
-          next()
-        } catch (err) {
-          // if refresh token is expired send user to the login page
-          next('/auth/login')
-        }
-    } else {
-      next('/auth/login')
-    }
-    
-  }
+  if (isAuthenticated.value && to.name === 'home')
+    return next() // allow authenticated users to access home
+  else if (isAuthenticated.value && !to.meta.requiresAuth)
+    return next('/dashboard') // redirect authenticated users from other public pages
+  else if (isAuthenticated.value)
+    return next() // allow authenticated users to access protected pages
+  else if (!isAuthenticated.value && to.meta.requiresAuth)
+    return next('/auth/login') // redirect unauthenticated users from protected pages
+  else return next() // allow unauthenticated users to access public pages
 })
 
 export default router
