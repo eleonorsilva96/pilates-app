@@ -1,22 +1,23 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import router from '@/router'
+import api from '@/services/axios'
 import { useAlertsStore } from '@/stores/alerts'
+import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { showSuccessAlert, showErrorAlert } from '@/helpers/generalHelpers'
-import router from '@/router'
-// import { useAuthStore } from '@/stores/auth'
-
-const storeAlerts = useAlertsStore()
-// const storeAuth = useAuthStore()
-
-const { isVisible, type, message } = storeToRefs(storeAlerts)
 
 const email = ref('')
 const password = ref('')
 
 // The API post request happens when the form is submitted
 async function submitForm() {
+  const storeAlerts = useAlertsStore()
+  const storeAuth = useAuthStore()
+
+  const { isVisible, type, message } = storeToRefs(storeAlerts)
+  const { isAuthenticated } = storeToRefs(storeAuth)
+
   // reset alerts store array to remove old values
   type.value = []
   message.value = []
@@ -27,15 +28,18 @@ async function submitForm() {
       password: password.value,
     }
 
-    const res = await axios.post('http://localhost:8888/api/auth/login', payload, {
+    const res = await api.post('/auth/login', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true
     })
 
+    // TO DO: reset submit form fields
+    // TO DO: disabled submit button while awaiting for API response to prevent double submissions
     if (res.status === 200) {
       showSuccessAlert(res.data.message, isVisible, type, message)
+      isAuthenticated.value = true
+
       router.push('/dashboard')
     }
   } catch (err) {

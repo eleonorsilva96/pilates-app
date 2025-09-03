@@ -1,11 +1,11 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import axios from 'axios'
 import { useAlertsStore } from '@/stores/alerts'
 import { storeToRefs } from 'pinia'
 import { showAlert } from '@/helpers/generalHelpers'
-import { isValidEmail, isValidName } from '@/helpers/textHelpers'
+// import { isValidEmail, isValidName } from '@/helpers/textHelpers'
 import { useRouter } from 'vue-router'
+import api from '@/services/axios'
 
 const storeAlerts = useAlertsStore()
 const { isVisible, type, message } = storeToRefs(storeAlerts)
@@ -92,7 +92,7 @@ async function submitForm() {
       password: password.value,
     }
 
-    const res = await axios.post('http://localhost:8888/api/auth/register', payload, {
+    const res = await api.post('/auth/register', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
