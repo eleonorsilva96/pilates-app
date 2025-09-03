@@ -52,6 +52,13 @@ const { isAuthenticated } = storeToRefs(storeAuth)
           >Classes
         </RouterLink>
       </div>
+      <div class="flex space-x-2">
+        <RouterLink to="/profile" class="font-medium text-neutral dark:text-neutral hover:no-underline">
+          <div class="flex justify-center items-center rounded-full h-9 w-9 bg-pink-700">
+            <span class="text-white">ES</span>
+          </div>
+        </RouterLink>
+      </div>
     </div>
     <div v-else class="flex space-x-4 items-center">
       <RouterLink
