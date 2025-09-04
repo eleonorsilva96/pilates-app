@@ -13,7 +13,7 @@ app.config.from_object('config.DevConfig')
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_COOKIE_SECURE"] = False
 app.config["JWT_COOKIE_CSRF_PROTECT"] = False
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 60    # 900 15 minutes
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 900    # 15 minutes
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 604800 # 7 days
 
 # Init extensions
