@@ -39,7 +39,6 @@ async function submitForm() {
     if (res.status === 200) {
       showSuccessAlert(res.data.message, isVisible, type, message)
       isAuthenticated.value = true
-
       router.push('/dashboard')
     }
   } catch (err) {
