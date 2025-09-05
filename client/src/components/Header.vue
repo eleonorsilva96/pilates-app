@@ -1,16 +1,35 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
-import { computed } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 
 const storeAuth = useAuthStore()
 const { isAuthenticated, userInitials } = storeToRefs(storeAuth)
+
+let showDrop = ref(false)
+const dropdownRef = useTemplateRef('profile')
 
 // computed variable
 const combineInitials = computed(() => {
   return Object.values(userInitials.value).join("")
 })
 
+function handleClickOutside(e) {
+  // checks if the clicked target is outside the profile dropdown
+  if (showDrop.value && !dropdownRef.value.contains(e.target)) {
+    showDrop.value = false
+  }
+}
+
+// when component loads, a click event listener is added to the document
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+// then it is removed before the component unmounts
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 </script>
 
@@ -35,7 +54,7 @@ const combineInitials = computed(() => {
         </RouterLink>
       </div>
       <div class="flex space-x-2 relative">
-        <button id="dropdownDefaultButton" class="font-medium text-neutral dark:text-neutral hover:no-underline" data-dropdown-toggle="dropdown">
+        <button class="font-medium text-neutral dark:text-neutral hover:no-underline" type="button" @click="showDrop = !showDrop" ref="profile">
           <div class="flex justify-center items-center rounded-full h-9 w-9 bg-pink-700">
             <span class="text-white">
               {{ combineInitials }}
@@ -43,8 +62,8 @@ const combineInitials = computed(() => {
           </div>
         </button>
         <!-- Dropdown menu -->
-        <div id="dropdown"
-          class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 top-5 right-0">
+        <div class="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 absolute top-10 right-0"
+          v-show="showDrop">
           <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
             <li>
               <RouterLink to="/profile"
@@ -52,8 +71,10 @@ const combineInitials = computed(() => {
               </RouterLink>
             </li>
             <li>
-              <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Log
-                out</a>
+              <button type="button"
+                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white w-full text-left"
+                @click="() => { storeAuth.logOut(); showDrop = false }">Log
+                out</button>
             </li>
           </ul>
         </div>

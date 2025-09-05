@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import api from '@/services/axios'
+import router from '@/router'
 
 export const useAuthStore = defineStore(
   'auth',
@@ -12,9 +13,9 @@ export const useAuthStore = defineStore(
       try {
         // backend validates token stored in HTTP-only cookie (sent automatically by the browser)
         const res = await api.get('/auth/check-auth')
-        isAuthenticated.value = true
-
+        
         if (res.status === 200) {
+          isAuthenticated.value = true
           userInitials.value = res.data.initials
           console.log(userInitials)
         }
@@ -25,7 +26,20 @@ export const useAuthStore = defineStore(
       }
     }
 
-    return { isAuthenticated, userInitials, initAuth }
+    async function logOut() {
+      try {
+        const res = await api.post('auth/logout') // there is no body but we changed the state
+
+        if (res.status === 200) {
+          isAuthenticated.value = false
+          router.push('/')
+        }
+      } catch (err) {
+        console.error("Logout failed:", err)
+      }
+    }
+
+    return { isAuthenticated, userInitials, initAuth, logOut }
   },
   {
     persist: true,
