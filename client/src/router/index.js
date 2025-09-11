@@ -7,6 +7,7 @@ import DashboardView from '../views/DashboardView.vue'
 import ClassesView from '../views/ClassesView.vue'
 import { useAuthStore } from '../stores/auth'
 import { storeToRefs } from 'pinia'
+import BookClassView from '../views/BookClassView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,11 +33,17 @@ const router = createRouter({
       meta: { requiresAuth: true }, // protected route
     },
     {
-      path: '/classes',
+    path: '/classes',
       name: 'classes',
       component: ClassesView,
       meta: { requiresAuth: true }, // protected route
     },
+    {
+      path: '/classes/book-class',
+      name: 'book-class',
+      component: BookClassView,
+      meta: { requiresAuth: true },
+    }
   ],
 })
 
