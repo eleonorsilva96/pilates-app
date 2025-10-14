@@ -1,6 +1,26 @@
 <script setup>
 import Button from '@/components/Button.vue';
 import ClassContainer from '@/components/ClassContainer.vue';
+import api from '@/services/axios';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const class_details = ref()
+const route = useRoute()
+
+onMounted(async () => {
+    try {
+        const res = await api.get(`/classes/${route.params.slug}`)
+        
+        class_details.value = res.data.class_details
+
+        console.log(class_details.value.class_.name)
+
+    } catch(err){
+
+    }
+})
+
 </script>
 
 <template>
@@ -15,14 +35,15 @@ import ClassContainer from '@/components/ClassContainer.vue';
             >
             Back to Classes
             </Button>
-            <h1 class="text-3xl font-bold text-foreground">Pilates Matt</h1>
-            <p class="text-gray-600">Energizing morning pilates class to start your day</p>
+            <h1 class="text-3xl font-bold text-foreground">{{ class_details?.class_.name }}</h1>
+            <p class="text-gray-600">{{ class_details?.class_.description }}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ClassContainer :show-form="false">
+        <!-- only pass object if it exists -->
+        <div v-if="class_details" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ClassContainer :showForm="false" :classDetails="class_details?.class_" :scheduleDetails="class_details?.schedules_info">
                 Class Information
             </ClassContainer>
-            <ClassContainer :show-form="true">
+            <ClassContainer :showForm="true" :scheduleDetails="class_details?.schedules_info" :scheduleDates="class_details?.dates">
                 Book a Class
             </ClassContainer>
         </div>
