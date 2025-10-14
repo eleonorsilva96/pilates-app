@@ -17,7 +17,6 @@ export const useAuthStore = defineStore(
         if (res.status === 200) {
           isAuthenticated.value = true
           userInitials.value = res.data.initials
-          console.log(userInitials)
         }
       } catch (err) {
         if (isAuthenticated.value) {

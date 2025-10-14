@@ -52,7 +52,7 @@ def register():
             password_hash=hashed_pw
         )
 
-        # sets the relationship with users and automatically links the user in the students table
+        # creates a new student record and links it to the given user instance via the foreign key
         Student(user=new_user)
 
         db.session.add(new_user)
