@@ -39,10 +39,12 @@ const router = createRouter({
       meta: { requiresAuth: true }, // protected route
     },
     {
-      path: '/classes/book-class',
-      name: 'book-class',
+    // passes route params as props to the component 
+      path: '/classes/:slug',
+      name: 'class-detail',
       component: BookClassView,
       meta: { requiresAuth: true },
+      props: true
     }
   ],
 })
