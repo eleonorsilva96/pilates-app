@@ -38,6 +38,7 @@ async function submitForm() {
     // TO DO: disabled submit button while awaiting for API response to prevent double submissions
     if (res.status === 200) {
       showSuccessAlert(res.data.message, isVisible, type, message)
+      storeAuth.initAuth()
       isAuthenticated.value = true
       router.push('/dashboard')
     }
