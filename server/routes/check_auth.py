@@ -9,18 +9,23 @@ import re
 auth_bp = Blueprint('auth_bp', __name__)
 
 # match first letter of each word (any word character)
-FIND_UPPERCASE_LETTERS = r"(?:^|\s)(\w)"
+FIND_UPPERCASE_LETTERS = r'\b[A-Z]'
+
+#TODO: pass the role from cookie
 
 # centralized token validator
 @auth_bp.route('/check-auth', methods=["GET"])
 @jwt_required()
 def check_auth():
     current_user_id = get_jwt_identity()
-    # pass the role from cookie
+     
     # collect user name
-    name = db.session.scalars(select(User.name).where(
+    name = db.session.scalar(select(User.name).where(
         User.id == current_user_id
-    )).first()
+    ))
+
+    if not name:
+        return jsonify({"error": "User not found"}), 404
 
     initials = re.findall(FIND_UPPERCASE_LETTERS, name)
 

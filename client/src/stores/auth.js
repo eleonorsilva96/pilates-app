@@ -7,7 +7,7 @@ export const useAuthStore = defineStore(
   'auth',
   () => {
     let isAuthenticated = ref(false)
-    let userInitials = ref([])
+    let userInitials = ref('')
 
     async function initAuth() {
       try {

@@ -11,6 +11,7 @@ login_bp = Blueprint('login_bp', __name__)
 refresh_bp = Blueprint('refresh_bp', __name__)
 logout_bp = Blueprint('logout_bp', __name__)
 
+# Validate request bodies
 class UserSchema(BaseModel):
     email: constr(strip_whitespace=True)
     password: constr(strip_whitespace=True)
