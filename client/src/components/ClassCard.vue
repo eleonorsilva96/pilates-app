@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { convertDayWeekShortName, storeUniqueDaysWeek, addComma } from '@/helpers/generalHelpers';
+import { convertDayWeekShortName, storeUniqueValues, addComma } from '@/helpers/generalHelpers';
 
 // destructure props object 
 const { description, schedules_info } = defineProps({
@@ -8,11 +8,9 @@ const { description, schedules_info } = defineProps({
     schedules_info: Object
 })
 
-const days_week_filtered = ref([])
+let schedules_filtered = ref([])
 
-days_week_filtered.value = storeUniqueDaysWeek(schedules_info.schedules)
-
-console.log(days_week_filtered.value)
+schedules_filtered = storeUniqueValues(schedules_info.schedules)
 
 </script>
 
@@ -68,8 +66,8 @@ console.log(days_week_filtered.value)
                         <rect width="18" height="18" x="3" y="4" rx="2"></rect>
                         <path d="M3 10h18"></path>
                     </svg>
-                    <span v-for="(day_of_week, index) in days_week_filtered" :key="index" class="text-gray-500 text-sm">{{
-                        addComma(index, convertDayWeekShortName(day_of_week), days_week_filtered) }}</span>
+                    <span v-for="(day_of_week, index) in schedules_filtered[0]" :key="index" class="text-gray-500 text-sm">{{
+                        addComma(index, convertDayWeekShortName(day_of_week), schedules_filtered[0]) }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-1">
@@ -82,7 +80,7 @@ console.log(days_week_filtered.value)
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span v-for="(name, index) in schedules_info.sorted_names" :key="index" class="text-gray-500 text-sm">{{ addComma(index, name, schedules_info.sorted_names) }}</span>
+                <span v-for="(name, index) in schedules_filtered[1]" :key="index" class="text-gray-500 text-sm">{{ addComma(index, name, schedules_filtered[1]) }}</span>
             </div>
         </div>
     </div>

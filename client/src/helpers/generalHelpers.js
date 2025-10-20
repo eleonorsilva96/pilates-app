@@ -1,3 +1,5 @@
+
+// TODO: add alert functions to the store
 export function showAlert(visible, type, message) {
   visible.value = true
 
@@ -42,17 +44,24 @@ export function convertDayWeek(day) {
   return days_of_week[day]
 }
 
-// for each class store only unique days of week in a array
-export function storeUniqueDaysWeek(schedules) {
+// store only unique days of week and instructors for each class
+export function storeUniqueValues(arr) {
   const days_week_filtered = []
+  const instructors_filtered = []
 
-  for (let i = 0; i < schedules.length; i++) {
-    if (!days_week_filtered.includes(schedules[i].day_of_week)) {
-      days_week_filtered.push(schedules[i].day_of_week)
+  for (let i = 0; i < arr.length; i++) {
+    if (!days_week_filtered.includes(arr[i].day_of_week)) {
+      days_week_filtered.push(arr[i].day_of_week)
+    }
+    if (!instructors_filtered.includes(arr[i].name)) {
+      instructors_filtered.push(arr[i].name)
     }
   }
 
-  return days_week_filtered
+  // sort alphabetically instructor names
+  instructors_filtered.sort()
+
+  return [days_week_filtered, instructors_filtered]
 }
 
 // add comma until it reaches the last element
