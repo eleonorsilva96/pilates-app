@@ -13,3 +13,4 @@ class User(db.Model):
     student = db.relationship("Student", back_populates="user", uselist=False)
     teacher = db.relationship("Teacher", back_populates="user", uselist=False)
     user_schedules = db.relationship("UserSchedule", back_populates="user")
+    schedule_events = db.relationship("ScheduleEvent", back_populates="user")

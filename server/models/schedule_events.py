@@ -1,11 +1,5 @@
-from extensions import db
+from extensions import db, ScheduleEvents
 from datetime import datetime
-from sqlalchemy import Enum as SAEnum
-from enum import Enum
-
-class EventType(str, Enum):
-    CANCEL = "CANCEL"
-    RESCHEDULE = "RESCHEDULE"
 
 # ClassSchedule constraint ensures each event has a unique start time
 class ScheduleEvent(db.Model):
@@ -14,7 +8,7 @@ class ScheduleEvent(db.Model):
     class_schedule_id = db.Column(db.Integer, db.ForeignKey("class_schedules.id"), nullable=False, index=True)
     updated_by_user_id = db.Column(db.String(21), db.ForeignKey("users.id"), nullable=False)
     date = db.Column(db.Date, nullable=False, index=True)
-    type = db.Column(SAEnum(EventType, name="schedule_event_type"), nullable=False) 
+    type = db.Column(db.Integer, nullable=False) 
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

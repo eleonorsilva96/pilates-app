@@ -9,14 +9,15 @@ class ClassSchedule(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     spots = db.Column(db.Integer, default=6, nullable=False)
-    status = db.Column(db.Integer, nullable=False, default=ClassesStatus.AVAILABLE.value)
+    status = db.Column(db.Integer, nullable=False, default=ClassesStatus.AVAILABLE)
     
     class_ = db.relationship("Classes", back_populates="schedules")
     teacher = db.relationship("Teacher", back_populates="schedules")
-    class_occurrences = db.relationship("ClassOccurrence", back_populates="schedule")
+    schedule_events = db.relationship("ScheduleEvent", back_populates="schedule", cascade="all, delete-orphan")
+    user_schedules = db.relationship("UserSchedule", back_populates="schedule", cascade="all, delete-orphan")
 
     # the teacher can only have one class type per day and ensure it is always enforced
-    # classes (same or different) don't start at the same time on the same day
+    # avoid classes start at the same time on the same day
     __table_args__ = (
         db.UniqueConstraint(
             "teacher_id", "day_of_week", "class_id",
