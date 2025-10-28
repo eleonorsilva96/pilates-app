@@ -17,6 +17,7 @@ class ScheduleEvent(db.Model):
     schedule = db.relationship("ClassSchedule", back_populates="schedule_events")
     user = db.relationship("User", back_populates="schedule_events")
 
+    # set different values to the rows depending of the type value
     __table_args__ = (
         db.CheckConstraint(
             "(type = 'CANCEL' AND start_time is NULL AND end_time is NULL)"

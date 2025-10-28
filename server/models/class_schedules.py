@@ -14,7 +14,7 @@ class ClassSchedule(db.Model):
     class_ = db.relationship("Classes", back_populates="schedules")
     teacher = db.relationship("Teacher", back_populates="schedules")
     schedule_events = db.relationship("ScheduleEvent", back_populates="schedule", cascade="all, delete-orphan")
-    user_schedules = db.relationship("UserSchedule", back_populates="schedule", cascade="all, delete-orphan")
+    class_occurrences = db.relationship("ClassOccurrence", back_populates="schedule", cascade="all, delete-orphan")
 
     # the teacher can only have one class type per day and ensure it is always enforced
     # avoid classes start at the same time on the same day
