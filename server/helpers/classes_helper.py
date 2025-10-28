@@ -58,6 +58,9 @@ def convert_days_week_in_dates(slug):
 
     # print(f"schedule_dates: ${schedule_dates}")
 
+    # convert date objects created in Python in strings
+    schedule_dates = [d.strftime("%Y-%m-%d") for d in schedule_dates]
+
     return schedule_dates
 
 def order_alphabetically(schedules):

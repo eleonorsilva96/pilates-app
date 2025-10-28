@@ -41,6 +41,7 @@ class ScheduleStatus(IntEnum):
     COMPLETED = 1
     CANCELED = 2
     WAITING = 3
+    NOT_BOOKED = 4
 
 # schedule changes types
 class ScheduleEvents(IntEnum):
