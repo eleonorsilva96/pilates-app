@@ -3,22 +3,20 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useAlertsStore } from '@/stores/alerts'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue';
+import { compile, computed, onMounted, ref } from 'vue';
 import { addComma, calculateDuration, convertDayWeek, convertMinutes, showAlert, storeUniqueValues } from '@/helpers/generalHelpers';
 import ButtonsCTA from './ButtonsCTA.vue';
 import api from '@/services/axios';
 
-const { showForm, classDetails, scheduleDetails, scheduleDates } = defineProps({
+const { showForm, schedules, dates } = defineProps({
     showForm: Boolean,
-    classDetails: Object,
-    scheduleDetails: Object,
-    scheduleDates: Array
+    schedules: Array,
+    dates: Array,
 })
 
 const storeAlerts = useAlertsStore()
 const { isVisible, type, message } = storeToRefs(storeAlerts)
-const date = ref(new Date(scheduleDates?.[0])) // set to select only the first available day
-let schedules_filtered = ref([])
+const date = ref(dates?.[0]) // set to select only the first available day
 const teacher = ref('')
 // TODO: add a available spots for each time slot the slots from class info is fixed (maximum slots)
 const spots = ref(null)
@@ -26,45 +24,147 @@ const scheduleId = ref(null)
 let selectedTime = ref(null)
 let showTeacher = ref(false)
 let isDisable = ref(true)
+let successfulBooking = ref(false)
 
-// show only one day of week to avoid repeated days 
+// return array will all user bookings
+const userBookings = computed(() => schedules
+        .flatMap(s => s.occurrences ?? []) // discard null or undefined values by returning empty array to avoid errors
+        .filter((occ) => occ.date === date.value && occ.booking?.booking_id != null))
+        
+// find user bookings
+// const userBookings = computed(() => schedules
+//         .flatMap(s => s.occurrences ?? []) // discard null or undefined values by returning empty array to avoid errors
+//         .find((occ) => occ.date === date.value))
+// schedules.forEach((schedule) => {
+//     console.log(schedule.occurrences.find((occ) => occ.date === date.value))
+// })
+// console.log(schedules[0].occurrences[0].date)
+// console.log(schedules)
+console.log(userBookings.value)
+// console.log(date.value)
 
-schedules_filtered = storeUniqueValues(scheduleDetails.schedules)
+// console.log(bookingsArr.value)
+
+// disabled schedule if is already booked
+// const disableSchedule = computed(() => isBooked ? isDisable : !isDisable)
+
+// show only unique days of week to avoid repeated days 
+const daysWeekFiltered = computed(() => storeUniqueValues(schedules, 'day_of_week'))
+
+console.log(daysWeekFiltered.value)
+
+// show only unique instructors
+const instructorsFiltered = computed(() => storeUniqueValues(schedules, 'teacher_name'))
+
+// store unique start_time values
+const timesFiltered = computed(() => {
+    const timesArr = []
+
+    for (let i = 0; i < schedules.length; i++) {
+
+        if (timesArr.length === 0) timesArr.push(schedules[i])
+        // check in the new array if it already have the value from schedules arr
+        const checkForDuplicates = timesArr.some((t) => t.start_time === schedules[i].start_time)
+        // if does not have push it to the new array
+        if (!checkForDuplicates) timesArr.push(schedules[i])
+    }
+
+    timesArr.sort()
+
+    return timesArr
+})
+
+// console.log(timesFiltered.value)
 
 // shift week day scale to 0=Monday ... 6=Sunday
-const shiftWeekDay = computed(() => (date.value.getDay() + 6) % 7)
+const shiftWeekDay = computed(() => (new Date(date.value).getDay() + 6) % 7)
 
-// return a new array with only the schedules whose day_of_week matches the selected day 
-const schedulesForDay = computed(() => scheduleDetails.schedules.filter((schedule) => schedule.day_of_week === shiftWeekDay.value))
+// return a new array with only the schedules of the selected day 
+const schedulesForDay = computed(() => schedules.filter((schedule) => schedule.day_of_week === shiftWeekDay.value))
+
+// console.log(schedules)
+
+// console.log(schedulesForDay.value)
+
+// return only unique start times from the schedules of the day
+const schedulesForDayTimesFiltered = computed(() => storeUniqueValues(schedulesForDay.value, 'start_time'))
+
+console.log(schedulesForDayTimesFiltered.value)
+
+// console.log(schedulesForDayTimesFiltered.value)
+
+// console.log(schedulesForDayTimesFiltered.value)
 
 const setScheduleTime = (start_time) => {
     showTeacher.value = true
     selectedTime.value = start_time
     isDisable.value = false
-    // find the schedule object to access id, teacher spots number
-    const scheduleObject = scheduleDetails.schedules.find((schedule) => schedule.start_time === start_time)
+    // find the schedule object with the same start time in the new array of the selected day schedules
+    const scheduleObject = schedulesForDay.value.find((s) => s.start_time === start_time)
+    const availableSpots = (scheduleObject.occurrences ?? []).find((occ) => occ.date === date.value) // return empty array if values are null or undefined
+
+    console.log(scheduleObject)
+    // console.log(availableSpots)
+
     scheduleId.value = scheduleObject.id
-    teacher.value = scheduleObject.name
-    spots.value = scheduleObject.spots
+    teacher.value = scheduleObject.teacher_name
+
+    // if occurrence exists and the selected date is the same as the occ set spots value
+    if (availableSpots) {
+
+        console.log(availableSpots)
+        spots.value = availableSpots.occ_spots
+    } else {
+        spots.value = scheduleObject.spots
+    }
+}
+
+// change slot time style if schedule is already booked
+const checkUserSchedule = (start_time) => {
+    const findBookTime = schedules.some(s => s.start_time === start_time && 
+    (s.occurrences ?? []).some((occ) => userBookings.value.some((u) => occ.booking.booking_id === u.booking.booking_id))) 
+
+    // to deal with dates with more than one slot time and has at least one booked  
+    if (findBookTime) {
+        isDisable.value = true
+        return 'bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed'
+    } else {
+        isDisable.value = false
+        const pointer = 'pointer-events-auto cursor-pointer'
+
+        if (isSelected(start_time)) {
+            return pointer + ' bg-pink-300'
+        } else {
+            return pointer + ' hover:bg-pink-100'
+        }
+    }
 }
 
 // change dynamically the bg color of the timer selector when click event happens
 const isSelected = (start_time) => start_time === selectedTime.value
+
 
 // when selected day changes
 const handleDate = (modelData) => {
     selectedTime.value = null
     showTeacher.value = false
     isDisable.value = true
+    successfulBooking = false
+    // console.log(bookingsArr.value)
     // update the date to have the latest day_of_week
     date.value = modelData
 }
+
+// const checkBookingSubmit = computed(() => {
+
+//     if (type.value == 'success') 
+// })
 
 async function submitForm() {
     try {
         const payload = {
             scheduleId: scheduleId.value,
-            date: date.value
+            date: date.value,
         }
 
         const res = await api.post('/classes', payload, {
@@ -75,17 +175,25 @@ async function submitForm() {
 
         if (res.status === 201) {
             // show success alert
+            console.log("last selected time " + selectedTime.value)
+            console.log("last selected date " + date.value)
+            // successfulBooking = 'bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed'
+            // isDisable.value = true
+            // console.log(type.value)
+            successfulBooking.value = true
+            console.log(schedules)
             type.value.push('success')
             message.value.push(res.data.message)
             showAlert(isVisible, type, message)
-        } 
+        }
 
-    } catch(err) {
+    } catch (err) {
         console.error(err)
-
     }
-    
+
 }
+
+// console.log(type.value)
 
 </script>
 
@@ -97,53 +205,51 @@ async function submitForm() {
             </h3>
             <div v-if="showForm">
                 <form action="/classes" method="post" @submit.prevent="submitForm">
-                 <div class="flex gap-3">
-                     <div class="flex flex-col gap-2">
-                         <label for="" class="text-sm">Date</label>
-                         <VueDatePicker 
-                            v-model="date" 
-                            :enable-time-picker="false" 
-                            :allowed-dates="scheduleDates"
-                            @update:model-value="handleDate" 
-                            inline 
-                            auto-apply 
-                        />
-                         <p class="text-sm text-gray-500">Only
-                             <span v-for="(day_of_week, index) in schedules_filtered[0]" :key="index">
-                                 {{ addComma(index, convertDayWeek(day_of_week), schedules_filtered[0]) }}
-                             </span>
-                             are available for this class
-                         </p>
-                     </div>
-                     <div class="flex flex-col gap-2 w-full">
-                         <label for="times" class="text-sm">Time</label>
-                         <div class="flex gap-2">
-                             <div v-for="schedule in schedulesForDay" :key="schedule.id"
-                                 @click="setScheduleTime(schedule.start_time)" :class="['w-full border rounded-md p-3 cursor-pointer',
-                                     isSelected(schedule.start_time) ? 'bg-pink-300' : 'hover:bg-pink-100',
-                                 ]">{{ schedule.start_time }}
-                             </div>
-                         </div>
-                         <div v-if="showTeacher" class="flex gap-2 items-center">
-                             <div class="flex gap-2 items-center">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                     stroke-linejoin="round" class="lucide lucide-user w-4 h-4 text-gray-500"
-                                     data-lov-id="src/pages/ClassesSimple.tsx:197:20" data-lov-name="User"
-                                     data-component-path="src/pages/ClassesSimple.tsx" data-component-line="197"
-                                     data-component-file="ClassesSimple.tsx" data-component-name="User"
-                                     data-component-content="%7B%22className%22%3A%22w-4%20h-4%22%7D">
-                                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                                     <circle cx="12" cy="7" r="4"></circle>
-                                 </svg>
-                                 <span class="text-sm font-medium">Instructor:</span>
-                             </div>
-                             <span class="text-base">{{ teacher }}</span>
-                         </div>
-                         <ButtonsCTA class="w-full mt-auto w-[96%] self-center" :is-disable="isDisable"
-                             button-type="submit">Schedule Class</ButtonsCTA>
-                         <!-- dropdown selector -->
-                         <!-- <div class="relative inline-flex items-center bg-white h-12 w-full">
+                    <div class="flex gap-3">
+                        <div class="flex flex-col gap-2">
+                            <label for="" class="text-sm">Date</label>
+                            <VueDatePicker v-model="date" model-type="format" format="yyyy-MM-dd"
+                                :enable-time-picker="false" :allowed-dates="dates" @update:model-value="handleDate"
+                                inline auto-apply />
+                            <p class="text-sm text-gray-500">Only
+                                <span v-for="(schedule, index) in daysWeekFiltered" :key="index">
+                                    {{ addComma(index, convertDayWeek(schedule.day_of_week), daysWeekFiltered) }}
+                                </span>
+                                are available for this class
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-2 w-full">
+                            <label for="times" class="text-sm">Time</label>
+                            <div class="flex gap-2">
+                                <div v-for="(schedule, index) in schedulesForDayTimesFiltered" :key="index"
+                                    @click="setScheduleTime(schedule.start_time)" :class="['w-full border rounded-md p-3',
+
+                                        // successfulBooking && isSelected(start_time) ? 'bg-gray-300 text-gray-500 pointer-events-none cursor-not-allowed' : 
+                                        checkUserSchedule(schedule.start_time),
+                                        // checkUserSchedule(start_time),
+                                    ]">{{ schedule.start_time }}
+                                </div>
+                            </div>
+                            <div v-if="showTeacher" class="flex gap-2 items-center">
+                                <div class="flex gap-2 items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" class="lucide lucide-user w-4 h-4 text-gray-500"
+                                        data-lov-id="src/pages/ClassesSimple.tsx:197:20" data-lov-name="User"
+                                        data-component-path="src/pages/ClassesSimple.tsx" data-component-line="197"
+                                        data-component-file="ClassesSimple.tsx" data-component-name="User"
+                                        data-component-content="%7B%22className%22%3A%22w-4%20h-4%22%7D">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <span class="text-sm font-medium">Instructor:</span>
+                                </div>
+                                <span class="text-base">{{ teacher }}</span>
+                            </div>
+                            <ButtonsCTA class="w-full mt-auto w-[96%] self-center" :is-disable="isDisable"
+                                button-type="submit">Schedule Class</ButtonsCTA>
+                            <!-- dropdown selector -->
+                            <!-- <div class="relative inline-flex items-center bg-white h-12 w-full">
                                <select name="times" id="times" class="appearance-none absolute inset-0 w-full h-full border rounded-md p-3">
                                    <option value="8:00">8:00</option>
                                    <option value="8:00">8:00</option>
@@ -160,8 +266,8 @@ async function submitForm() {
                                    <path d="m6 9 6 6 6-6"></path>
                                </svg>
                            </div> -->
-                     </div>
-                 </div>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div v-else class="flex flex-col gap-3">
@@ -179,8 +285,8 @@ async function submitForm() {
                         </svg>
                         <span class="text-sm font-medium">Instructors:</span>
                     </div>
-                    <span v-for="(name, index) in schedules_filtered[1]" :key="index" class="text-base">{{
-                        addComma(index, name, schedules_filtered[1]) }}</span>
+                    <span v-for="(schedule, index) in instructorsFiltered" :key="index" class="text-base">{{
+                        addComma(index, schedule.teacher_name, instructorsFiltered) }}</span>
                 </div>
                 <div class="flex gap-2 items-center">
                     <div class="flex gap-2 items-center">
@@ -198,8 +304,8 @@ async function submitForm() {
                         </svg>
                         <span class="text-sm font-medium">Days:</span>
                     </div>
-                    <span v-for="(day_of_week, index) in schedules_filtered[0]" :key="index" class="text-base">
-                        {{ addComma(index, convertDayWeek(day_of_week), schedules_filtered[0]) }}
+                    <span v-for="(schedule, index) in daysWeekFiltered" :key="index" class="text-base">
+                        {{ addComma(index, convertDayWeek(schedule.day_of_week), daysWeekFiltered) }}
                     </span>
                 </div>
                 <div class="flex gap-2 items-center">
@@ -216,10 +322,10 @@ async function submitForm() {
                         </svg>
                         <span class="text-sm font-medium">Times:</span>
                     </div>
-                    <span v-for="(schedule, index) in scheduleDetails.schedules" :key="index" class="text-base">
+                    <span v-for="(schedule, index) in timesFiltered" :key="index" class="text-base">
                         {{ schedule.start_time }} - {{ schedule.end_time }} {{
                             addComma(index, calculateDuration(convertMinutes(schedule.start_time),
-                                convertMinutes(schedule.end_time)), scheduleDetails.schedules) }}
+                                convertMinutes(schedule.end_time)), timesFiltered) }}
                     </span>
                 </div>
                 <div class="flex gap-2 items-center">

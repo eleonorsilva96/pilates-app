@@ -14,7 +14,7 @@ onMounted(async () => {
         
         class_details.value = res.data.class_details
 
-        console.log(class_details.value.class_.name)
+        // console.log(class_details.value.class_.name)
 
     } catch(err){
 
@@ -40,10 +40,10 @@ onMounted(async () => {
         </div>
         <!-- only pass object if it exists -->
         <div v-if="class_details" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ClassContainer :showForm="false" :classDetails="class_details?.class_" :scheduleDetails="class_details?.schedules_info">
+            <ClassContainer :showForm="false" :schedules="class_details?.schedules">
                 Class Information
             </ClassContainer>
-            <ClassContainer :showForm="true" :scheduleDetails="class_details?.schedules_info" :scheduleDates="class_details?.dates">
+            <ClassContainer :showForm="true" :schedules="class_details?.schedules" :dates="class_details?.dates">
                 Book a Class
             </ClassContainer>
         </div>

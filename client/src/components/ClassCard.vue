@@ -1,16 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { convertDayWeekShortName, storeUniqueValues, addComma } from '@/helpers/generalHelpers';
 
 // destructure props object 
-const { description, schedules_info } = defineProps({
+const { description, schedules } = defineProps({
     description: String,
-    schedules_info: Object
+    schedules: Array
 })
 
-let schedules_filtered = ref([])
+// show only unique days of week to avoid repeated days 
+const daysWeekFiltered = computed(() => storeUniqueValues(schedules, 'day_of_week'))
 
-schedules_filtered = storeUniqueValues(schedules_info.schedules)
+// show only unique instructors
+const instructorsFiltered = computed(() => storeUniqueValues(schedules, 'teacher_name'))
+
+// show unique schedule times
+const scheduleTimesFiltered = computed(() => storeUniqueValues(schedules, 'start_time'))
+
+console.log(schedules)
 
 </script>
 
@@ -49,8 +56,9 @@ schedules_filtered = storeUniqueValues(schedules_info.schedules)
                     </svg>
                     <div class="flex gap-2">
                         <!-- class occurrences -->
-                        <span v-for="(schedule, index) in schedules_info.schedules" :key="index" class="text-gray-500 text-sm">{{
-                            schedule.start_time }}</span>
+                        <span v-for="(schedule, index) in scheduleTimesFiltered" :key="index"
+                            class="text-gray-500 text-sm">{{
+                                schedule.start_time }}</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-1">
@@ -66,8 +74,8 @@ schedules_filtered = storeUniqueValues(schedules_info.schedules)
                         <rect width="18" height="18" x="3" y="4" rx="2"></rect>
                         <path d="M3 10h18"></path>
                     </svg>
-                    <span v-for="(day_of_week, index) in schedules_filtered[0]" :key="index" class="text-gray-500 text-sm">{{
-                        addComma(index, convertDayWeekShortName(day_of_week), schedules_filtered[0]) }}</span>
+                    <span v-for="(schedule, index) in daysWeekFiltered" :key="index" class="text-gray-500 text-sm">{{
+                        addComma(index, convertDayWeekShortName(schedule.day_of_week), daysWeekFiltered) }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-1">
@@ -80,10 +88,9 @@ schedules_filtered = storeUniqueValues(schedules_info.schedules)
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span v-for="(name, index) in schedules_filtered[1]" :key="index" class="text-gray-500 text-sm">{{ addComma(index, name, schedules_filtered[1]) }}</span>
+                <span v-for="(schedule, index) in instructorsFiltered" :key="index" class="text-gray-500 text-sm">{{
+                    addComma(index, schedule.teacher_name, instructorsFiltered) }}</span>
             </div>
         </div>
     </div>
 </template>
-
-<!-- index != schedules.length - 1 ? schedule.name + ',' : schedule.name  -->

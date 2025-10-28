@@ -44,24 +44,36 @@ export function convertDayWeek(day) {
   return days_of_week[day]
 }
 
-// store only unique days of week and instructors for each class
-export function storeUniqueValues(arr) {
-  const days_week_filtered = []
-  const instructors_filtered = []
+// export function storeUniqueValues(arr, prop) {
+//   const values_filtered = []
+
+//   for (let i = 0; i < arr.length; i++) {
+//     // use bracket notation when we want to use the name of the variable to access the object property
+//     if (!values_filtered.includes(arr[i][prop])) values_filtered.push(arr[i][prop])
+//   }
+
+//   // sort alphabetically instructor names
+//   values_filtered.sort()
+
+//   return values_filtered
+// }
+
+export function storeUniqueValues(arr, prop) {
+  const uniqueValuesArr = []
 
   for (let i = 0; i < arr.length; i++) {
-    if (!days_week_filtered.includes(arr[i].day_of_week)) {
-      days_week_filtered.push(arr[i].day_of_week)
-    }
-    if (!instructors_filtered.includes(arr[i].name)) {
-      instructors_filtered.push(arr[i].name)
-    }
+
+      if (uniqueValuesArr.length === 0) uniqueValuesArr.push(arr[i])
+      // check in the new array if it already have the value from schedules arr
+      const checkForDuplicates = uniqueValuesArr.some((v) => v[prop] === arr[i][prop])
+      // if does not have push it to the new array
+      if (!checkForDuplicates) uniqueValuesArr.push(arr[i])
   }
 
-  // sort alphabetically instructor names
-  instructors_filtered.sort()
+  uniqueValuesArr.sort()
 
-  return [days_week_filtered, instructors_filtered]
+  return uniqueValuesArr
+
 }
 
 // add comma until it reaches the last element
